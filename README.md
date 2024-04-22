@@ -35,6 +35,13 @@ After the installation, you can access the website at the following address:
 
 >http://localhost/login
 
+⚠️ Notice that the webapp works only with the host: 'localhost' to make the website visible to the whole network you have to set manually the env
+
+```bash
+SERVER_NAME=<your_ip_address_or_host> make build && make up
+```
+
+
 You'll be redirected to the login page, you can use the following credentials to access the app:
 
 - Username: user.default
