@@ -29,18 +29,18 @@ git clone https://github.com/<username>/MeasureFilter.git
 cd MeasureFilter
 make build && make up
 ```
-## Usage
 
-After the installation, you can access the website at the following address:
-
->http://localhost/login
-
-⚠️ Notice that the webapp works only with the host: 'localhost' to make the website visible to the whole network you have to set manually the env
+**⚠️ Notice that with this configuration the webapp works only with the host: 'localhost' to make the website visible to the whole network you have to set manually the env like this:**
 
 ```bash
 SERVER_NAME=<your_ip_address_or_host> make build && make up
 ```
 
+## Usage
+
+After the installation, you can access the website at the following address:
+
+>http://localhost/login
 
 You'll be redirected to the login page, you can use the following credentials to access the app:
 
