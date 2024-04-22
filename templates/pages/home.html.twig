@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}MeasureFilter - Home{% endblock %}
+{% block pagetitle %}Home{% endblock %}
+
+{% block body %}
+    <div class="row">
+
+        <!-- Filter Count Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Filtri Registrati</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ countFilters }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-filter fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Measurements Count Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Misurazioni Totali</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ countMeasurements }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-balance-scale fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- Measurement Medium Chart Card -->
+        <div class="col-xl-12 col-md-12 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Andamento delle misurazioni</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="measurementMediumChart" style=" margin: 10px auto;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+<script src="{{ asset('vendor/chart.js/Chart.bundle.min.js') }}"></script>
+<script>
+    const measurementMediumChart = document.getElementById('measurementMediumChart');
+
+    document.addEventListener('DOMContentLoaded', function () {
+        $.ajax({
+            url: "{{ path('filter_measurement_last_data') }}",
+            type: 'GET',
+            success: function (data) {
+                const xValues = data.map((item) => item.x);
+                const yValues = data.map((item) => item.y);
+
+               new Chart(measurementMediumChart, {
+                    type: 'line',
+                    data: {
+                        labels: xValues,
+                        datasets: [{
+                            label: 'Misurazione',
+                            data: yValues,
+                            fill: false,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

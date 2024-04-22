@@ -1,0 +1,339 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}MeasureFilter - Filtri{% endblock %}
+{% block pagetitle %}Lista dei filtri{% endblock %}
+
+{% block stylesheets %}
+    <link href="{{ asset('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('vendor/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet">
+{% endblock %}
+{% block button %}
+    <div>
+    <a href="{{ path('filter_export') }}" class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm"><i
+            class="fas fa-file-export fa-sm text-white-50"></i> Esporta filtri</a>
+    <a href="{{ path('filter_create') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+            class="fas fa-plus-circle fa-sm text-white-50"></i> Nuovo filtro</a>
+    </div>
+{% endblock %}
+{% block body %}
+    <div class="card">
+        <div class="card-body">
+            <div id="filters-table"></div>
+        </div>
+    </div>
+
+    <!-- Measurements Modal -->
+    <div class="modal fade" id="measurementsModal" tabindex="-1" role="dialog" aria-labelledby="measurementsModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="measurementsModalLabel">Misurazioni del filtro</h5>
+                    <div class="d-flex justify-content-end">
+                        <button style="margin-top:0.4rem;padding:0;background-color:transparent;border:0"
+                                onclick="newMeasurement()">
+                        <span aria-hidden="true"><i class="fas fa-plus-circle text-success"
+                                                    style="font-size: 1.2rem"></i></span>
+                        </button>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body
+                ">
+                    <div class="table-responsive">
+                        <table class="table table-bordered w-100" id="measurements-table">
+                            <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Peso</th>
+                                <th>Temperatura</th>
+                                <th>Umidità</th>
+                                <th>Data</th>
+                                <th>Azioni</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Measurement Modal -->
+    <div class="modal fade" id="newMeasurementModal" tabindex="-1" role="dialog"
+         aria-labelledby="newMeasurementModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newMeasurementModalLabel">Nuova misurazione</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="measurement-form">
+                        <input type="hidden" name="filter">
+                        <input type="hidden" name="editing-id">
+                        <div class="form-group">
+                            <label for="type">Tipo</label>
+                            <select class="form-control" id="type" name="type">
+                                <option value="W">White</option>
+                                <option value="B">Black</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="value">Peso (espresso in g)</label>
+                            <input type="text" class="form-control" id="value" name="value">
+                        </div>
+                        <div class="form-group">
+                            <label for="temperature">Temperatura</label>
+                            <input type="text" class="form-control" id="temperature" name="temperature">
+                        </div>
+                        <div class="form-group">
+                            <label for="humidity">Umidità</label>
+                            <input type="text" class="form-control" id="humidity" name="humidity">
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Data</label>
+                            <input type="datetime-local" class="form-control" id="date" name="date">
+                        </div>
+                    </form>
+
+                    <button type="button" class="btn btn-primary" onclick="saveMeasurement()">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+    <!-- Page level plugins -->
+    <script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('bundles/datatables/js/datatables.js') }}"></script>
+
+    <!-- Page Functionality Script -->
+    <script>
+        let table = null;
+        let measurementsTable = null;
+
+        $("#filters-table").initDataTables({{ datatable_settings(datatable) }}).then((dt) => {
+            table = dt;
+        });
+
+        function deleteFilter(id) {
+            Swal.fire({
+                title: 'Sei sicuro?',
+                text: "Non potrai recuperare questo filtro!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sì, elimina!',
+                cancelButtonText: 'Annulla'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ path('filter_delete') }}",
+                        type: 'DELETE',
+                        data: {
+                            id: id
+                        },
+                        success: function (data) {
+                            table.ajax.reload();
+                            Swal.fire(
+                                'Eliminato!',
+                                'Il filtro è stato eliminato.',
+                                'success'
+                            );
+                        },
+                        error: function (data) {
+                            Swal.fire(
+                                'Errore!',
+                                'Si è verificato un errore durante l\'eliminazione del filtro.',
+                                'error'
+                            );
+                        }
+                    });
+                }
+
+            })
+        }
+
+        $(document).ready(function () {
+            $("#newMeasurementModal").on("show.bs.modal", function (event) {
+                clearMeasurementsForm();
+            });
+        });
+
+        function clearMeasurementsForm() {
+            $("#measurement-form input[name='editing-id']").val(null);
+            $("#measurement-form select[name='type']").val(null);
+            $("#measurement-form input[name='value']").val(null);
+            $("#measurement-form input[name='temperature']").val(null);
+            $("#measurement-form input[name='humidity']").val(null);
+            $("#measurement-form input[name='date']").val(null);
+        }
+
+        function openMeasurementsModal(filter) {
+            if (measurementsTable !== null) {
+                measurementsTable.destroy();
+            }
+
+            $("#measurement-form input[name='filter']").val(filter);
+
+            measurementsTable = $("#measurements-table").DataTable({
+                autoWidth: false,
+                dom: "<'row' <'col-sm-12' tr>>",
+                ajax: {
+                    url: "{{ path('filter_measurements') }}",
+                    type: 'POST',
+                    data: {
+                        filter: filter
+                    },
+                    dataSrc: ''
+                },
+                columns: [
+                    {data: 'type', width: '5%'},
+                    {
+                        data: 'value', width: '10%',
+                        render: function (data) {
+                            return data + ' g';
+                        }
+                    },
+                    {
+                        data: 'temperature', width: '5%',
+                        render: function (data) {
+                            return data + '°C';
+                        }
+                    },
+                    {
+                        width: '5%',
+                        data: 'humidity', render: function (data) {
+                            return data + '%';
+                        }
+                    },
+                    {data: 'date', width: '10%'},
+                    {
+                        width: '5%',
+                        data: 'id',
+                        render: function (data) {
+                            return '<div class="d-flex justify-content-center">' +
+                                '<button class="btn btn-sm btn-primary" onclick="editMeasurement(' + data + ')"><i class="fas fa-pencil-alt"></i></button>&nbsp;' +
+                                '<button class="btn btn-sm btn-danger" onclick="deleteMeasurement(' + data + ')">' +
+                                '<i class="fas fa-trash"></i>' +
+                                '</button>' +
+                                '</div>';
+                        }
+                    }
+                ],
+                order: [[4, 'desc']]
+            });
+            $("#measurementsModal").modal("show");
+        }
+
+        function newMeasurement() {
+            $("#newMeasurementModal").modal("show");
+        }
+
+        function saveMeasurement() {
+            replaceCommaWithDot('value');
+            replaceCommaWithDot('temperature');
+            replaceCommaWithDot('humidity');
+
+            $.ajax({
+                url: "{{ path('filter_measurement_save') }}",
+                type: 'POST',
+                data: $("#measurement-form").serialize(),
+                success: function (data) {
+                    $("#newMeasurementModal").modal("hide");
+                    measurementsTable.ajax.reload();
+                    table.ajax.reload();
+                },
+                error: function (data) {
+                    Swal.fire(
+                        'Errore!',
+                        'Si è verificato un errore durante il salvataggio della misurazione.',
+                        'error'
+                    );
+                }
+            });
+        }
+
+        function editMeasurement(id) {
+            $.ajax({
+                url: "{{ path('filter_measurement_get') }}",
+                type: 'POST',
+                data: {
+                    id: id
+                },
+                success: function (data) {
+                    $("#newMeasurementModal").modal("show");
+                    $("#measurement-form input[name='filter']").val(data.filter);
+                    $("#measurement-form input[name='editing-id']").val(data.id);
+                    $("#measurement-form select[name='type']").val(data.type);
+                    $("#measurement-form input[name='value']").val(data.value);
+                    $("#measurement-form input[name='temperature']").val(data.temperature);
+                    $("#measurement-form input[name='humidity']").val(data.humidity);
+                    $("#measurement-form input[name='date']").val(data.date);
+                },
+                error: function (data) {
+                    Swal.fire(
+                        'Errore!',
+                        'Si è verificato un errore durante il caricamento della misurazione.',
+                        'error'
+                    );
+                }
+            });
+        }
+
+        function deleteMeasurement(id) {
+            Swal.fire({
+                title: 'Sei sicuro?',
+                text: "Non potrai recuperare questa misurazione!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sì, elimina!',
+                cancelButtonText: 'Annulla'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ path('filter_measurement_delete') }}",
+                        type: 'DELETE',
+                        data: {
+                            id: id
+                        },
+                        success: function (data) {
+                            measurementsTable.ajax.reload();
+                            Swal.fire(
+                                'Eliminato!',
+                                'La misurazione è stata eliminata.',
+                                'success'
+                            );
+                        },
+                        error: function (data) {
+                            Swal.fire(
+                                'Errore!',
+                                'Si è verificato un errore durante l\'eliminazione della misurazione.',
+                                'error'
+                            );
+                        }
+                    });
+                }
+
+            })
+        }
+
+        function replaceCommaWithDot(inputName) {
+            var inputValue = $("#measurement-form input[name='" + inputName + "']").val();
+            $("#measurement-form input[name='" + inputName + "']").val(inputValue.replace(",", "."));
+        }
+    </script>
+{% endblock %}

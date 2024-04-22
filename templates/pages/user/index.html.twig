@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}MeasureFilter - Utenti{% endblock %}
+{% block pagetitle %}Lista degli utenti{% endblock %}
+
+{% block button %}
+    <div>
+        <a href="{{ path('user_create') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                class="fas fa-plus-circle fa-sm text-white-50"></i> Nuovo utente</a>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    <link href="{{ asset('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('vendor/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet">
+{% endblock %}
+{% block body %}
+    <div class="card">
+        <div class="card-body">
+            <div id="users-table"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+<!-- Page level plugins -->
+<script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
+<script src="{{ asset('bundles/datatables/js/datatables.js') }}"></script>
+
+<!-- Page Functionality Script -->
+<script>
+    let table = null;
+
+    $("#users-table").initDataTables({{ datatable_settings(datatable) }}).then((dt) => {
+        table = dt;
+    });
+
+    function deleteUser(id) {
+        Swal.fire({
+            title: 'Sei sicuro?',
+            text: "Non potrai tornare indietro!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, elimina!',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{{ path('user_delete') }}",
+                    type: 'POST',
+                    data: {id: id},
+                    success: function (response) {
+                        Swal.fire(
+                            'Eliminato!',
+                            'L\'utente è stato eliminato.',
+                            'success'
+                        );
+                        table.ajax.reload();
+                    },
+                    error: function () {
+                        Swal.fire(
+                            'Errore!',
+                            'Si è verificato un errore durante l\'eliminazione.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}

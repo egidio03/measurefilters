@@ -1,0 +1,11 @@
+<div class="dropdown no-arrow mb-4">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fas fa-ellipsis-h"></i>
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" href="{{ path('user_edit', {'id' : user.id}) }}"><i class="fa fa-pencil-alt text-primary"></i> Modifica</a>
+        <a class="dropdown-item" href="javascript:void(0);" onclick="deleteUser({{ user.id }})">
+            <i class="fa fa-trash-alt text-danger"></i> Elimina
+        </a>
+    </div>
+</div>

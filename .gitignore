@@ -1,0 +1,17 @@
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+/.idea/codeception.xml
+/.idea/phpspec.xml
+/.idea/phpunit.xml
+/.idea/sqldialects.xml
+/.idea/symfony2.xml
+ddata/
+.idea/

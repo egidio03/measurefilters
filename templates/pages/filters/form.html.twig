@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% set modeType = mode == 'create' ? "Nuovo" : "Modifica" %}
+{% block title %}MeasureFilter - {{ modeType }} Filtro{% endblock %}
+{% block pagetitle %}{{ modeType }} Filtro{% endblock %}
+
+{% block body %}
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
+            <div class="row">
+                <div class="col-md-1">
+                    {{ form_row(form.type) }}
+                </div>
+                <div class="col-md-2">
+                    {{ form_row(form.abbreviation) }}
+                </div>
+                <div class="col-md-3">
+                    {{ form_row(form.user) }}
+                </div>
+                <div class="col-md-2">
+                    {{ form_row(form.method) }}
+                </div>
+                <div class="col-md-2">
+                    {{ form_row(form.filteredVolume) }}
+                </div>
+                <div class="col-md-2">
+                    {{ form_row(form.solidRelationship) }}
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-lg-6">
+                    {{ form_row(form.first_line) }}
+                </div>
+                <div class="col-lg-6">
+                    {{ form_row(form.second_line) }}
+                </div>
+            </div>
+            {{ form_row(form.submit) }}
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
